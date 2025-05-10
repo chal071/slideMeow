@@ -9,6 +9,9 @@ public class GamePanel extends JPanel implements KeyListener {
     private final int ROWS = 14;
     private final int COLS = 16;
     private Image catImg;
+    private Image iceImg;
+    private Image floorImg;
+
 
     private int[][] map = {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -37,6 +40,8 @@ public class GamePanel extends JPanel implements KeyListener {
         setFocusable(true);
         addKeyListener(this);
         catImg = new ImageIcon("slideMeow/resource/cat.png").getImage();
+        iceImg = new ImageIcon("slideMeow/resource/icleblock.png").getImage();
+        floorImg = new ImageIcon("slideMeow/resource/floor.png").getImage();
     }
 
     public void startGame() {
@@ -49,17 +54,31 @@ public class GamePanel extends JPanel implements KeyListener {
 
         for (int y = 0; y < ROWS; y++) {
             for (int x = 0; x < COLS; x++) {
-                switch (map[y][x]) {
-                    case 1 -> g.setColor(Color.DARK_GRAY); // Pared
-                    case 2 -> g.setColor(Color.YELLOW);    // Meta
-                    case 3 -> g.setColor(Color.CYAN);      // Inicio
-                    default -> g.setColor(Color.LIGHT_GRAY); // Camino
+                int tile = map[y][x];
+
+                if (tile == 1) {
+                    g.drawImage(iceImg, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+                } else {
+                    g.drawImage(floorImg, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
                 }
-                g.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                if (tile == 2) {
+                    g.setColor(Color.YELLOW);
+                    g.fillOval(x * TILE_SIZE + 16, y * TILE_SIZE + 16, TILE_SIZE / 2, TILE_SIZE / 2);
+                }
+                if (tile == 3) {
+                    g.setColor(Color.CYAN);
+                    g.fillOval(x * TILE_SIZE + 16, y * TILE_SIZE + 16, TILE_SIZE / 2, TILE_SIZE / 2);
+                }
+
             }
         }
+        int catWidth = TILE_SIZE + 10;
+        int catHeight = TILE_SIZE + 10;
+        int offsetX = (TILE_SIZE - catWidth) / 2;
+        int offsetY = (TILE_SIZE - catHeight) / 2;
 
-        g.drawImage(catImg, playerX * TILE_SIZE, playerY * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+        g.drawImage(catImg, playerX * TILE_SIZE + offsetX, playerY * TILE_SIZE + offsetY, catWidth, catHeight, this);
     }
 
     private void slide(int dx, int dy) {
