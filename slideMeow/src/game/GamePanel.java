@@ -8,6 +8,7 @@ public class GamePanel extends JPanel implements KeyListener {
     private final int TILE_SIZE = 48;
     private final int ROWS = 14;
     private final int COLS = 16;
+    private Image catImg;
 
     private int[][] map = {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -29,11 +30,13 @@ public class GamePanel extends JPanel implements KeyListener {
 
     private int playerX = 14, playerY = 13;
 
+
     public GamePanel() {
         setPreferredSize(new Dimension(COLS * TILE_SIZE, ROWS * TILE_SIZE));
         setBackground(Color.WHITE);
         setFocusable(true);
         addKeyListener(this);
+        catImg = new ImageIcon("slideMeow/resource/cat.png").getImage();
     }
 
     public void startGame() {
@@ -56,8 +59,7 @@ public class GamePanel extends JPanel implements KeyListener {
             }
         }
 
-        g.setColor(Color.PINK);
-        g.fillOval(playerX * TILE_SIZE + 8, playerY * TILE_SIZE + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+        g.drawImage(catImg, playerX * TILE_SIZE, playerY * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
     }
 
     private void slide(int dx, int dy) {
