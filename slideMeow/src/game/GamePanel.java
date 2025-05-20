@@ -39,7 +39,7 @@ public class GamePanel extends JPanel implements KeyListener {
         setBackground(Color.WHITE);
         setFocusable(true);
         addKeyListener(this);
-        catImg = new ImageIcon("slideMeow/resource/cat.png").getImage();
+        catImg = new ImageIcon("slideMeow/resource/neko.png").getImage();
         iceImg = new ImageIcon("slideMeow/resource/icleblock.png").getImage();
         floorImg = new ImageIcon("slideMeow/resource/floor.png").getImage();
     }
