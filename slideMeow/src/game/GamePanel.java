@@ -8,12 +8,12 @@ public class GamePanel extends JPanel implements KeyListener {
     private final int TILE_SIZE = 48;
     private final int ROWS = 14;
     private final int COLS = 16;
-    private Image catImg;
-    private Image iceImg;
-    private Image floorImg;
+    private final Image catImg;
+    private final Image iceImg;
+    private final Image floorImg;
 
 
-    private int[][] map = {
+    private final int[][] map = {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -82,27 +82,35 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     private void slide(int dx, int dy) {
-        while (true) {
+        boolean deslizandose = true;
+
+        while (deslizandose) {
             int nextX = playerX + dx;
             int nextY = playerY + dy;
 
-            if (map[nextY][nextX] == 1) break;
+            int nextTile = map[nextY][nextX];
 
-            playerX = nextX;
-            playerY = nextY;
-            repaint();
+            if (nextTile == 1) {
+                deslizandose = false;
+            } else {
+                playerX = nextX;
+                playerY = nextY;
+                repaint();
 
-            if (map[playerY][playerX] == 2) {
-                JOptionPane.showMessageDialog(this, "\uD83D\uDE3A ¡Has llegado a la meta!");
-                break;
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                if (nextTile == 2) {
+                    JOptionPane.showMessageDialog(this, "😺 ¡Has llegado a la meta!");
+                    deslizandose = false;
+                }
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
+
 
     @Override
     public void keyPressed(KeyEvent e) {
