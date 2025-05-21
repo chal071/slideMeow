@@ -1,4 +1,4 @@
-package info;
+package ui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,7 +9,7 @@ public class GameInfoPanel extends JPanel {
     private int segundos = 0;
 
     public GameInfoPanel() {
-        setPreferredSize(new Dimension(800, 40));
+        setPreferredSize(new Dimension(750, 40));
         setBackground(new Color(245, 249, 251));
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
