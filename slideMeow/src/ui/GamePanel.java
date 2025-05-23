@@ -5,39 +5,40 @@ import core.SlideMeowMain;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.*;
+import java.io.*;
+import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements KeyListener {
-    private final int ROWS = 14;
-    private final int COLS = 16;
-    private final int TILE_SIZE = SlideMeowMain.GAME_HEIGHT / COLS;
-    private final Image catImg;
-    private final Image iceImg;
-    private final Image floorImg;
+    private int rows;
+    private int cols;
+    private int tile;
+    private int[][] map;
 
+    private Image catImg;
+    private Image iceImg;
+    private Image floorImg;
 
-    private final int[][] map = {
-            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-            {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-            {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-            {1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1}
-    };
+    private SlideMeowMain parent;
+    private String mapaNombre;      // p. ej., "Fácil"
+    private String archivoMapa;     // p. ej., "map1.txt"
 
+    private int playerX, playerY;
+    private long startTime;
 
-    private int playerX = 14, playerY = 13;
+    private int usuarioId;
 
+    public GamePanel(SlideMeowMain parent, int usuarioId, String mapaNombre, String archivoMapa) {
+        this.parent = parent;
+        this.usuarioId = usuarioId;
+        this.mapaNombre = mapaNombre;
+        this.archivoMapa = archivoMapa;
 
-    public GamePanel() {
-        setPreferredSize(new Dimension(SlideMeowMain.GAME_WIDTH, SlideMeowMain.GAME_HEIGHT - 40));
+        cargarMapaDesdeArchivo(archivoMapa);
+        encontrarInicioDesdeMapa();
+
+        tile = SlideMeowMain.gameHeight / cols;
+        setPreferredSize(new Dimension(SlideMeowMain.gameWidth, SlideMeowMain.gameHeight - 40));
         setBackground(Color.WHITE);
         setFocusable(true);
         addKeyListener(this);
@@ -45,8 +46,79 @@ public class GamePanel extends JPanel implements KeyListener {
         catImg = new ImageIcon("slideMeow/resource/neko.png").getImage();
         iceImg = new ImageIcon("slideMeow/resource/icleblock.png").getImage();
         floorImg = new ImageIcon("slideMeow/resource/floor.png").getImage();
+
+        startTime = System.currentTimeMillis();
     }
 
+    public void cargarMapaDesdeArchivo(String ruta) {
+        ArrayList<int[]> filas = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] tokens = linea.trim().split(";");
+                int[] fila = new int[tokens.length];
+                for (int i = 0; i < tokens.length; i++) {
+                    fila[i] = Integer.parseInt(tokens[i]);
+                }
+                filas.add(fila);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al leer la mapa: " + e.getMessage());
+        }
+
+        map = new int[filas.size()][filas.get(0).length];
+        for (int i = 0; i < filas.size(); i++) {
+            map[i] = filas.get(i);
+        }
+        rows = map.length;
+        cols = map[0].length;
+    }
+
+    public void encontrarInicioDesdeMapa() {
+        for (int y = 0; y < map.length; y++) {
+            for (int x = 0; x < map[0].length; x++) {
+                if (map[y][x] == 3) {
+                    playerX = x;
+                    playerY = y;
+                    return;
+                }
+            }
+        }
+    }
+
+    private void guardarResultadoEnBD(int usuarioId, String dificultad, String archivo, int tiempo) {
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/slideMeow", "root", "mysql")) {
+            String insertMapa = "INSERT IGNORE INTO mapas (nombre, archivo) VALUES (?, ?)";
+            PreparedStatement stmtInsert = con.prepareStatement(insertMapa);
+            stmtInsert.setString(1, dificultad);
+            stmtInsert.setString(2, archivo);
+            stmtInsert.executeUpdate();
+
+            String selectMapa = "SELECT id FROM mapas WHERE archivo = ?";
+            PreparedStatement stmtSelect = con.prepareStatement(selectMapa);
+            stmtSelect.setString(1, archivo);
+            ResultSet rs = stmtSelect.executeQuery();
+
+            if (rs.next()) {
+                SlideMeowMain.mapaId = rs.getInt("id");
+            }
+
+            if (SlideMeowMain.mapaId != -1) {
+                String insertRanking = "INSERT INTO ranking (usuario_id, mapa_id, tiempo) VALUES (?, ?, ?)";
+                PreparedStatement stmtRanking = con.prepareStatement(insertRanking);
+                stmtRanking.setInt(1, usuarioId);
+                stmtRanking.setInt(2, SlideMeowMain.mapaId);
+                stmtRanking.setInt(3, tiempo);
+                stmtRanking.executeUpdate();
+            } else {
+                System.err.println("❌ No se pudo obtener el ID del mapa.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("❌ Error al guardar resultado en la base de datos.");
+        }
+    }
 
     public void startGame() {
         requestFocusInWindow();
@@ -55,53 +127,37 @@ public class GamePanel extends JPanel implements KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        int totalWidth = COLS * TILE_SIZE;
-        int totalHeight = ROWS * TILE_SIZE;
-
+        int totalWidth = cols * tile;
+        int totalHeight = rows * tile;
         int offsetX = (getWidth() - totalWidth) / 2;
         int offsetY = (getHeight() - totalHeight) / 2;
 
-        for (int y = 0; y < ROWS; y++) {
-            for (int x = 0; x < COLS; x++) {
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
                 int tile = map[y][x];
-
-                // 画地板
-                g.drawImage(floorImg, offsetX + x * TILE_SIZE, offsetY + y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
-
-                // 冰块或墙壁
-                if (tile == 1) {
-                    g.drawImage(iceImg, offsetX + x * TILE_SIZE, offsetY + y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
-                }
-
-                // 起点/终点提示可选
+                g.drawImage(floorImg, offsetX + x * this.tile, offsetY + y * this.tile, this.tile, this.tile, this);
+                if (tile == 1) g.drawImage(iceImg, offsetX + x * this.tile, offsetY + y * this.tile, this.tile, this.tile, this);
                 if (tile == 2) {
                     g.setColor(Color.YELLOW);
-                    g.fillOval(offsetX + x * TILE_SIZE + TILE_SIZE/4, offsetY + y * TILE_SIZE + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2);
+                    g.fillOval(offsetX + x * this.tile + this.tile / 4, offsetY + y * this.tile + this.tile / 4, this.tile / 2, this.tile / 2);
                 }
-
-                if (tile == 3) {
-                    g.setColor(Color.CYAN);
-                    g.fillOval(offsetX + x * TILE_SIZE + TILE_SIZE/4, offsetY + y * TILE_SIZE + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2);
+                else if (tile == 3) {
+                    g.setColor(Color.cyan);
+                    g.fillOval(offsetX + x * this.tile + this.tile / 4, offsetY + y * this.tile + this.tile / 4, this.tile / 2, this.tile / 2);
                 }
             }
         }
-
-        // 画猫猫
-        g.drawImage(catImg, offsetX + playerX * TILE_SIZE, offsetY + playerY * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+        g.drawImage(catImg, offsetX + playerX * tile, offsetY + playerY * tile, tile, tile, this);
     }
-
 
     private void slide(int dx, int dy) {
         boolean deslizandose = true;
-
         while (deslizandose) {
             int nextX = playerX + dx;
             int nextY = playerY + dy;
-
             int nextTile = map[nextY][nextX];
 
-            if (nextTile == 1) {
+            if (nextTile == 1 || nextTile == 4) {
                 deslizandose = false;
             } else {
                 playerX = nextX;
@@ -109,7 +165,11 @@ public class GamePanel extends JPanel implements KeyListener {
                 repaint();
 
                 if (nextTile == 2) {
-                    JOptionPane.showMessageDialog(this, "😺 ¡Has llegado a la meta!");
+                    long endTime = System.currentTimeMillis();
+                    int tiempo = (int) ((endTime - startTime) / 1000);
+
+                    guardarResultadoEnBD(usuarioId, mapaNombre, archivoMapa, tiempo);
+                    parent.mostrarResultado();
                     deslizandose = false;
                 }
 
@@ -122,18 +182,20 @@ public class GamePanel extends JPanel implements KeyListener {
         }
     }
 
+    @Override public void keyTyped(KeyEvent e) {}
+    @Override public void keyReleased(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP -> slide(0, -1);
-            case KeyEvent.VK_DOWN -> slide(0, 1);
-            case KeyEvent.VK_LEFT -> slide(-1, 0);
-            case KeyEvent.VK_RIGHT -> slide(1, 0);
+            case KeyEvent.VK_UP, KeyEvent.VK_W -> slide(0, -1);
+            case KeyEvent.VK_DOWN, KeyEvent.VK_S -> slide(0, 1);
+            case KeyEvent.VK_LEFT, KeyEvent.VK_A -> slide(-1, 0);
+            case KeyEvent.VK_RIGHT, KeyEvent.VK_D -> slide(1, 0);
         }
     }
 
-    @Override public void keyTyped(KeyEvent e) {}
-    @Override public void keyReleased(KeyEvent e) {}
+    public String getMapaNombre() {
+        return mapaNombre;
+    }
 }
-

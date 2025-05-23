@@ -1,44 +1,51 @@
 package core;
 
-import ui.GameInfoPanel;
-import ui.GamePanel;
-import ui.MenuPanel;
+import ui.*;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class SlideMeowMain {
-    public static final int GAME_WIDTH = 800;
-    public static final int GAME_HEIGHT = 600;
+    public static int gameWidth = 800;
+    public static int gameHeight = 600;
+    public JFrame frame;
+    public MenuPanel menuPanel;
+    public JPanel juegoPanel;
+    private LoginPanel loginPanel;
+    public static String usuarioActual;
+    public int usuarioId;
+    public static int mapaId;
 
-    private JFrame frame;
-    private MenuPanel menuPanel;
-    private JPanel juegoPanel;
+
 
     public SlideMeowMain() {
         frame = new JFrame("Slide Meow!");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
-        // 主菜单
         menuPanel = new MenuPanel(this);
-        menuPanel.setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
+        loginPanel = new LoginPanel(this);
+        menuPanel.setPreferredSize(new Dimension(gameWidth, gameHeight));
 
         frame.setContentPane(menuPanel);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        Image icon = new ImageIcon("slideMeow/resource/logotip.png").getImage();
+        frame.setIconImage(icon);
     }
 
-    public void mostrarJuego() {
-        // 游戏界面
+
+
+    public void mostrarJuego(String nombreMapa ,String ruta, int usuarioId) {
         juegoPanel = new JPanel(new BorderLayout());
 
-        GameInfoPanel infoPanel = new GameInfoPanel();
-        infoPanel.setPreferredSize(new Dimension(GAME_WIDTH, 40));
+        GameInfoPanel infoPanel = new GameInfoPanel(nombreMapa);
+        infoPanel.setPreferredSize(new Dimension(gameWidth, 40));
 
-        GamePanel gamePanel = new GamePanel();
-        gamePanel.setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT - 40));
+        GamePanel gamePanel = new GamePanel(this, usuarioId, nombreMapa, ruta);
+        gamePanel.setPreferredSize(new Dimension(gameWidth, gameHeight - 40));
 
         juegoPanel.add(infoPanel, BorderLayout.NORTH);
         juegoPanel.add(gamePanel, BorderLayout.CENTER);
@@ -46,10 +53,41 @@ public class SlideMeowMain {
         frame.setContentPane(juegoPanel);
         frame.revalidate();
         frame.repaint();
+        gamePanel.cargarMapaDesdeArchivo(ruta);
+        gamePanel.encontrarInicioDesdeMapa();
         gamePanel.startGame();
     }
 
     public static void main(String[] args) {
         new SlideMeowMain();
     }
+
+
+    public void mostrarLogin() {
+        frame.setContentPane(loginPanel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    public void mostrarResultado() {
+        frame.setContentPane(new ResultPanel(this, mapaId));
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    public void volverAlMenu() {
+        frame.setContentPane(new MapSelectPanel(this, usuarioId));
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    public void mostrarSeleccionDeMapa() {
+        frame.setContentPane(new MapSelectPanel(this, usuarioId));
+        frame.revalidate();
+    }
+
+
+
+
+
 }
