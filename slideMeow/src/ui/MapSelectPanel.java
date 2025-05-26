@@ -17,18 +17,38 @@ public class MapSelectPanel extends JPanel {
         setPreferredSize(new Dimension(SlideMeowMain.gameWidth, SlideMeowMain.gameHeight));
         setBackground(new Color(255, 249, 251));
 
-        JLabel title = new JLabel("\uD83C\uDF0D Elige tu mapa", SwingConstants.CENTER);
+        JLabel title = new JLabel("Select Difficulty", SwingConstants.CENTER);
         title.setFont(new Font("Fredoka One", Font.BOLD, 36));
         title.setForeground(new Color(130, 90, 160));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setBorder(BorderFactory.createEmptyBorder(40, 0, 30, 0));
         add(title);
 
+        JButton logoutButton = new JButton("Log out");
+        logoutButton.setFont(new Font("Poppins", Font.BOLD, 16));
+        logoutButton.setBackground(new Color(210, 100, 104));
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.setFocusPainted(false);
+        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logoutButton.setMaximumSize(new Dimension(200, 40));
+        logoutButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        logoutButton.addActionListener(e -> {
+            parent.usuarioActual = null;
+            parent.usuarioId = -1;
+            parent.mostrarLogin();
+        });
+
         add(Box.createVerticalStrut(20));
 
         cargarMapasDesdeBD();
 
         add(Box.createVerticalGlue());
+
+        add(Box.createVerticalStrut(30));
+        add(logoutButton);
+        add(Box.createVerticalGlue());
+
     }
 
     private void cargarMapasDesdeBD() {
@@ -40,10 +60,11 @@ public class MapSelectPanel extends JPanel {
                 String nombre = rs.getString("nombre");
                 String archivo = rs.getString("archivo");
                 add(crearBotonMapa(nombre, archivo));
+                add(Box.createVerticalStrut(15));
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "No se pudieron cargar los mapas desde la base de datos\n" + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Maps could not be loaded from the database\n" + e.getMessage());
         }
     }
 
@@ -60,7 +81,6 @@ public class MapSelectPanel extends JPanel {
         btn.addActionListener(e -> {
             parent.mostrarJuego(nombre, ruta, usuarioId);
         });
-
         return btn;
     }
 }

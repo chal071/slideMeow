@@ -30,8 +30,8 @@ public class GameInfoPanel extends JPanel {
         super.paintComponent(g);
         g.setColor(Color.DARK_GRAY);
         g.setFont(new Font("Poppins", Font.BOLD, 16));
-        g.drawString("Nivel: " + nivel, 20, 25);
-        g.drawString("Tiempo: " + segundos + "s", 180, 25);
-        g.drawString("¡Desliza hasta la meta!", 360, 25);
+        g.drawString("Level: " + nivel, 20, 25);
+        g.drawString("Times: " + segundos + "s", 180, 25);
+        g.drawString("Slide to the exit!", 360, 25);
     }
 }

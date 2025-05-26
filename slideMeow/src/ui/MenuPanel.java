@@ -20,8 +20,8 @@ public class MenuPanel extends JPanel {
         title.setFont(new Font("Fredoka One", Font.BOLD, 36));
         title.setForeground(new Color(210, 100, 104));
 
-        JButton startButton = new JButton("Comenzar");
-        JButton exitButton = new JButton("Salir");
+        JButton startButton = new JButton("Start");
+        JButton exitButton = new JButton("Exit");
 
         startButton.setPreferredSize(new Dimension(200, 40));
         startButton.setFont(new Font("Poppins", Font.BOLD ,16));

@@ -18,7 +18,7 @@ public class ResultPanel extends JPanel {
         setPreferredSize(new Dimension(SlideMeowMain.gameWidth, SlideMeowMain.gameHeight));
         setBackground(new Color(255, 249, 251));
 
-        JLabel title = new JLabel("Resultados", SwingConstants.CENTER);
+        JLabel title = new JLabel("Results", SwingConstants.CENTER);
         title.setFont(new Font("Fredoka One", Font.BOLD, 40));
         title.setForeground(new Color(130, 90, 160));
         title.setBorder(BorderFactory.createEmptyBorder(30, 0, 10, 0));
@@ -48,7 +48,7 @@ public class ResultPanel extends JPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        JButton volverBtn = new JButton("Volver al menú principal");
+        JButton volverBtn = new JButton("Return to the menu");
         volverBtn.setFont(new Font("Poppins", Font.BOLD, 18));
         volverBtn.setBackground(new Color(208, 194, 240));
         volverBtn.setForeground(Color.WHITE);
@@ -65,7 +65,7 @@ public class ResultPanel extends JPanel {
 
     private void cargarResultado() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nJugador: ").append(SlideMeowMain.usuarioActual).append("\n\n");
+        sb.append("\nPlayer: ").append(SlideMeowMain.usuarioActual).append("\n\n");
 
         try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/slideMeow", "root", "mysql")) {
             PreparedStatement stmt = con.prepareStatement(
@@ -74,11 +74,11 @@ public class ResultPanel extends JPanel {
             stmt.setInt(2, mapaId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                sb.append("Tiempo: ").append(rs.getInt("tiempo")).append(" segundos\n");
-                sb.append("Mapa: ").append(rs.getString("mapa_nombre")).append("\n\n");
+                sb.append("Time: ").append(rs.getInt("tiempo")).append(" seconds\n");
+                sb.append("Map: ").append(rs.getString("mapa_nombre")).append("\n\n");
             }
 
-            sb.append("Top 10 de este mapa:\n\n");
+            sb.append("Top 10 of this map:\n\n");
             stmt = con.prepareStatement("SELECT u.nombre, r.tiempo FROM ranking r JOIN usuarios u ON r.usuario_id = u.id WHERE r.mapa_id = ? ORDER BY r.tiempo ASC LIMIT 10");
             stmt.setInt(1, mapaId);
             rs = stmt.executeQuery();
@@ -89,7 +89,7 @@ public class ResultPanel extends JPanel {
             }
 
         } catch (Exception e) {
-            sb.append("\nError al cargar resultados");
+            sb.append("\nError loading results");
         }
 
         area.setText(sb.toString());
