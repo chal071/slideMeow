@@ -94,8 +94,4 @@ public class ResultPanel extends JPanel {
 
         area.setText(sb.toString());
     }
-
-    public int getMapaId() {
-        return mapaId;
-    }
 }

@@ -20,8 +20,8 @@ public class GamePanel extends JPanel implements KeyListener {
     private Image floorImg;
 
     private SlideMeowMain parent;
-    private String mapaNombre;      // p. ej., "Fácil"
-    private String archivoMapa;     // p. ej., "map1.txt"
+    private String mapaNombre;
+    private String archivoMapa;
 
     private int playerX, playerY;
     private long startTime;
@@ -111,12 +111,12 @@ public class GamePanel extends JPanel implements KeyListener {
                 stmtRanking.setInt(3, tiempo);
                 stmtRanking.executeUpdate();
             } else {
-                System.err.println("❌ No se pudo obtener el ID del mapa.");
+                System.err.println("No se pudo obtener el ID del mapa.");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("❌ Error al guardar resultado en la base de datos.");
+            System.err.println("rror al guardar resultado en la base de datos.");
         }
     }
 
@@ -193,9 +193,5 @@ public class GamePanel extends JPanel implements KeyListener {
             case KeyEvent.VK_LEFT, KeyEvent.VK_A -> slide(-1, 0);
             case KeyEvent.VK_RIGHT, KeyEvent.VK_D -> slide(1, 0);
         }
-    }
-
-    public String getMapaNombre() {
-        return mapaNombre;
     }
 }
